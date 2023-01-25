@@ -12,6 +12,7 @@ class CustomDataset(Dataset):
         super(CustomDataset,self).__init__()
         
         self.root     = root                          # Dataset directory 
+        self.dataset  = root.split('/')[-1]
         self.img_size = img_size 
         self.mode     = mode                          # Training mode : Fullshot, 2cls Fewshot, 2cls Highshot 
         self.img_cls  = img_cls                       # Image Class 
@@ -61,6 +62,8 @@ class CustomDataset(Dataset):
     def load_gt(self,gt_dir):
         try:
             gt = Image.open(os.path.join(self.root,gt_dir))
+            if self.dataset == 'ViSA':
+                gt = np.array(gt)*255
             #gt = cv2.resize(np.array(gt),dsize=(self.img_size,self.img_size))
             #gt = np.expand_dims(gt,axis=-1)
         except:
