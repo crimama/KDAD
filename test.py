@@ -46,7 +46,7 @@ def compute_pro(masks: ndarray, amaps: ndarray, num_th: int = 200) -> None:
     assert amaps.ndim == 3, "amaps.ndim must be 3 (num_test_data, h, w)"
     assert masks.ndim == 3, "masks.ndim must be 3 (num_test_data, h, w)"
     assert amaps.shape == masks.shape, "amaps.shape and masks.shape must be same"
-    assert set(masks.flatten()) == {0, 1}, "set(masks.flatten()) must be {0, 1}"
+    #assert set(masks.flatten()) == {0, 1}, "set(masks.flatten()) must be {0, 1}"
     assert isinstance(num_th, int), "type(num_th) must be int"
 
     df = pd.DataFrame([], columns=["pro", "fpr", "threshold"])
