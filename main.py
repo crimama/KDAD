@@ -138,9 +138,9 @@ def init():
         pass
     
     # save configs 
+    cfg['SAVE']['savedir'] = savedir
     with open(f"{savedir}/config.yaml",'w') as f:
             yaml.dump(cfg,f)
-    cfg['SAVE']['savedir'] = savedir
     return cfg 
 
 if __name__ == '__main__':
