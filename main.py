@@ -1,17 +1,19 @@
 from src.dataset import CustomDataset
 from src.models.resnet import resnet18, resnet34, resnet50, wide_resnet50_2
 from src.models.de_resnet import de_resnet18, de_resnet34, de_wide_resnet50_2, de_resnet50
-from test import evaluation
+from src.test import evaluation
+from src.augmentation import get_data_transforms
+
 from torch.utils.data import DataLoader,DataLoader2
 import torch.nn as nn 
 import torch.nn.functional as F 
 import torch 
 import torchvision.transforms as transforms 
+
 import yaml 
 from tqdm.auto import tqdm 
 import numpy as np 
 import random 
-from tqdm import tqdm 
 import os 
 import argparse 
 
@@ -41,11 +43,13 @@ def loss_function(a, b):
 def run(cfg):
     setup_seed(cfg['TRAIN']['seed'])
     device = cfg['TRAIN']['device']
+    
+    data_transform, gt_transform = get_data_transforms(cfg['DATA']['imgsize'],cfg['DATA']['imgsize'])
     trainloader = DataLoader(
                     dataset = CustomDataset(
                                             root          = cfg['DATA']['datadir'],
                                             img_size      = cfg['DATA']['imgsize'],
-                                            transform     = transforms.Compose([transforms.ToTensor()]),
+                                            transform     = data_transform,
                                             img_cls       = cfg['DATA']['imgcls'],
                                             mode          = cfg['DATA']['mode'],
                                             train         = True 
@@ -58,7 +62,7 @@ def run(cfg):
                     dataset = CustomDataset(
                                             root          = cfg['DATA']['datadir'],
                                             img_size      = cfg['DATA']['imgsize'],
-                                            transform     = transforms.Compose([transforms.ToTensor()]),
+                                            transform     = gt_transform,
                                             img_cls       = cfg['DATA']['imgcls'],
                                             mode          = cfg['DATA']['mode'],
                                             train         = False
@@ -80,7 +84,7 @@ def run(cfg):
 def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg):
     best = 0 
     device = cfg['TRAIN']['device']
-    for epoch in tqdm(range(cfg['TRAIN']['epochs'])):
+    for epoch in range(cfg['TRAIN']['epochs']):
         bn.train()
         decoder.train()
         loss_list = [] 
@@ -127,6 +131,7 @@ def init():
     cfg['SAVE']['savedir'] = savedir
     with open(f"{savedir}/config.yaml",'w') as f:
             yaml.dump(cfg,f)
+            
     return cfg 
 
 if __name__ == '__main__':
