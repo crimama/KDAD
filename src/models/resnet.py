@@ -78,7 +78,7 @@ class BasicBlock(nn.Module):
         out = self.bn2(out)
 
         if self.downsample is not None:
-            identity = self.downsample(x)
+            identity = self.downsample(x) # Input 과 downsample 된 feature 간의 차원 맞춰주기 위한 용도 
 
         out += identity
         out = self.relu(out)
@@ -93,7 +93,7 @@ class Bottleneck(nn.Module):
     # This variant is also known as ResNet V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
-    expansion: int = 4
+    expansion: int = 4 # 최종 feature의 channel을 몇으로 할 지 
 
     def __init__(
         self,
@@ -400,6 +400,7 @@ class BN_layer(nn.Module):
         self.inplanes = 256 * block.expansion
         self.dilation = 1
         self.bn_layer = self._make_layer(block, 512, layers, stride=2)
+        #bn_layer : Reverse distillation에서 OCE에 해당하는 레이어 
 
         self.conv1 = conv3x3(64 * block.expansion, 128 * block.expansion, 2)
         self.bn1 = norm_layer(128 * block.expansion)
@@ -411,7 +412,8 @@ class BN_layer(nn.Module):
 
         self.conv4 = conv1x1(1024 * block.expansion, 512 * block.expansion, 1)
         self.bn4 = norm_layer(512 * block.expansion)
-
+        #conv1 ~ bn4 까지 Reverse distillation에서 MFF에 해당하는 레이어 
+        #Teacher의 각 feature들을 동일한 차원으로 downsample해주고 concat 하는 역할 
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):

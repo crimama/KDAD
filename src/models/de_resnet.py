@@ -189,7 +189,7 @@ class ResNet(nn.Module):
         #self.bn1 = norm_layer(self.inplanes)
         #self.relu = nn.ReLU(inplace=True)
         #self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 256, layers[0], stride=2)
+        self.layer1 = self._make_layer(block, 256, layers[0], stride=2) #block : layer 구조 | 256 : output num channel | layers : 해당 layer 반복 횟수 
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2,
                                        dilate=replace_stride_with_dilation[0])
         self.layer3 = self._make_layer(block, 64, layers[2], stride=2,
@@ -231,11 +231,11 @@ class ResNet(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, upsample, self.groups,
+        layers.append(block(self.inplanes, planes, stride, upsample, self.groups, #<-- upsample 하는 레이어 
                             self.base_width, previous_dilation, norm_layer))
-        self.inplanes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
+        self.inplanes = planes * block.expansion 
+        for _ in range(1, blocks): #<-- upsample 된 상태로 동일한 channel로 계속 레이어 쌓음 
+            layers.append(block(self.inplanes, planes, groups=self.groups, 
                                 base_width=self.base_width, dilation=self.dilation,
                                 norm_layer=norm_layer))
 
