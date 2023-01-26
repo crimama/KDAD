@@ -6,7 +6,7 @@ DATA:
   mode : full 
 
 TRAIN:
-  batchsize : 16
+  batchsize : 8
   device : cuda
   lr : 0.001
   epochs : 100 
@@ -14,3 +14,7 @@ TRAIN:
 
 SAVE:
   savedir : './save_models'
+
+MODEL:
+  encoder : resnet34 
+  decoder : de_resnet34
