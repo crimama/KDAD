@@ -1,7 +1,7 @@
 DATA:
   datadir : ../Dataset/MVtecAD
-  dataset : MvtecAD
-  imgcls : bottle
+  dataset : MVtecAD
+  imgcls : screw
   imgsize : 256 
   mode : full 
 
