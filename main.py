@@ -153,17 +153,18 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg):
         epoch_time_m.update(time.time()-epoch_end) 
         epoch_end = time.time()  
         #logging 
-        _logger.info(f"epoch: [{epoch+1}/{cfg['TRAIN']['epochs']}] "
-                     f"loss: {np.mean(loss_list):.4f} "
-                     f"lr = {optimizer.param_groups[0]['lr']:.4f} "
-                     f"batch_time = {batch_time_m.val:.4f} "
-                     f"epoch_time = {epoch_time_m.val:.4f} "
+        _logger.info(f"epoch: [{epoch+1}/{cfg['TRAIN']['epochs']}]|"
+                     f"loss: {np.mean(loss_list):.4f}|"
+                     f"lr = {optimizer.param_groups[0]['lr']:.4f}|"
+                     f"batch_time = {batch_time_m.val:.4f}|"
+                     f"epoch_time = {epoch_time_m.val:.4f}|"
+                     f"total time = {epoch_time_m.sum:.4f}|"
                      )
         
         if (epoch +1) % 2 == 0:
             auroc_px, auroc_sp, aupro_px = evaluation(encoder, bn, decoder, testloader, device)
-            _logger.info(f'Pixel Auroc:{auroc_px:.3f} | Sample Auroc:{auroc_sp:.3f} | '
-                         'Pixel Aupro:{auroc_px:.3}')
+            _logger.info(f' Pixel Auroc:{auroc_px:.3f} | Sample Auroc:{auroc_sp:.3f} | '
+                         f' Pixel Aupro:{auroc_px:.3f} | ')
             
             if auroc_px > best:
                 torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'best_decoder.pt'))
