@@ -1,7 +1,7 @@
 DATA:
   datadir : ../Dataset/MVtecAD
   dataset : MVtecAD
-  imgcls : screw
+  imgcls : grid
   imgsize : 256 
   mode : full 
 
@@ -9,12 +9,13 @@ TRAIN:
   batchsize : 8
   device : cuda
   lr : 0.001
-  epochs : 100 
+  epochs : 10
   seed : 111
 
 SAVE:
   savedir : './save_models'
+  wandb : false 
 
 MODEL:
-  encoder : resnet34 
-  decoder : de_resnet34
+  encoder : wide_resnet50_2 
+  decoder : de_wide_resnet50_2
