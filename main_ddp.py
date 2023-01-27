@@ -2,13 +2,13 @@ from src.dataset import CustomDataset
 from src.models import resnet,de_resnet 
 from src.test import evaluation
 from src.log import setup_default_logging
-from torch.utils.data import DataLoader,DataLoader2
+from torch.utils.data import DataLoader
 import torch.nn as nn 
 import torch.nn.functional as F 
 import torch 
 import torchvision.transforms as transforms 
 import yaml 
-from tqdm.auto import tqdm 
+
 import numpy as np 
 import random 
 from tqdm import tqdm 
@@ -17,6 +17,7 @@ import argparse
 from accelerate import Accelerator,DistributedDataParallelKwargs,logging 
 import warnings 
 import time 
+import wandb 
 warnings.filterwarnings('ignore')
 
 _logger = logging.get_logger('train')
@@ -64,13 +65,17 @@ def run(cfg):
     # setting Accelerator 
     # ! ddp_scaler 반드시 추가 해주어야 함 
     ddp_scaler = DistributedDataParallelKwargs(bucket_cap_mb=15, find_unused_parameters=True)
-    accelerator = Accelerator(kwargs_handlers=[ddp_scaler])
+    
+    if cfg['SAVE']['wandb']:
+        accelerator = Accelerator(kwargs_handlers=[ddp_scaler],log_with='wandb')
+    else:
+        accelerator = Accelerator(kwargs_handlers=[ddp_scaler])
+        
     device = accelerator.device
     
     # set logger 
     setup_default_logging(log_path=os.path.join(cfg['SAVE']['savedir'],'log.txt'))
     _logger.info('Device: {}'.format(device))
-    
     
     # build dataloader 
     trainloader = DataLoader(
@@ -120,8 +125,14 @@ def run(cfg):
     trainloader,testloader,encoder,bn,decoder,optimizer = accelerator.prepare(
         trainloader,testloader,encoder,bn,decoder,optimizer)
     
+    # initialize wandb: 
+    if cfg['SAVE']['wandb']:
+        accelerator.init_trackers(project_name='main_ddp',config=cfg,init_kwargs={"wandb":{"name":"Idea10",
+                                                                                           "group":"my_experiment"}})
+        
+        
     # Training Start 
-    _logger.info("All loaded, train start")
+    accelerator.print("All loaded, train start")
     train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator)
     
 def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
@@ -146,7 +157,8 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
             # predict 
             inputs = encoder(batch_imgs)
             outputs = decoder(bn(inputs))
-            
+
+            # calculate loss 
             loss = loss_function(inputs,outputs)
             
             # loss update 
@@ -174,24 +186,29 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
                      )
         
         # calculate metric 
-        if (epoch +1) % 2 == 0:
-            auroc_px, auroc_sp, aupro_px = evaluation(encoder, bn, decoder, testloader, accelerator.device)
-            #accelerator.print('Pixel Auroc:{:.3f} | Sample Auroc:{:.3f} | Pixel Aupro:{:.3}'.format(auroc_px, auroc_sp, aupro_px))
-            _logger.info(f' Pixel Auroc:{auroc_px:.3f} | Sample Auroc:{auroc_sp:.3f} | '
-                         f' Pixel Aupro:{auroc_px:.3f} | ')
+        auroc_px, auroc_sp, aupro_px = evaluation(encoder, bn, decoder, testloader, accelerator.device)
+        #accelerator.print('Pixel Auroc:{:.3f} | Sample Auroc:{:.3f} | Pixel Aupro:{:.3}'.format(auroc_px, auroc_sp, aupro_px))
+        _logger.info(f' Pixel Auroc:{auroc_px:.3f}|sample Auroc:{auroc_sp:.3f}|Pixel Aupro:{auroc_px:.3f}|')
             
-            # check point save 
-            if auroc_px > best:
-                torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'best_decoder.pt'))
-                torch.save(bn,os.path.join(cfg['SAVE']['savedir'],'best_bn.pt'))
-                #accelerator.save_state(os.path.join(cfg['SAVE']['savedir']))
-                _logger.info(f"New Best model saved - Epoch : {epoch+1}")
-                
-                best = auroc_px
+        # check point save 
+        if auroc_px > best:
+            best = auroc_px
+            torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'best_decoder.pt'))
+            torch.save(bn,os.path.join(cfg['SAVE']['savedir'],'best_bn.pt'))
+            #accelerator.save_state(os.path.join(cfg['SAVE']['savedir']))
+            _logger.info(f"New Best model saved - Epoch : {epoch+1}")
             
+        # wandb log 
+        if cfg['SAVE']['wandb']:
+            accelerator.log({"loss" : np.mean(loss_list),
+                             "lr"   : optimizer.param_groups[0]['lr'],
+                             "Pixel AUROC" : auroc_px,
+                             "Pixel AUPRO" : aupro_px
+                             })
+                    
     torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'last_decoder.pt'))
     torch.save(bn,os.path.join(cfg['SAVE']['savedir'],'last_bn.pt'))
-    
+    accelerator.end_training()
 def init():
     # configs 
     parser = argparse.ArgumentParser(description='RD')
