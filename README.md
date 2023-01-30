@@ -12,7 +12,7 @@ Paper : https://arxiv.org/abs/2201.10703
 
 # Run 
 
-**single - gpu**
+**Single - gpu**
 ```
 python Reversedistillation.py --yaml_config ./configs/mvtec.yaml
 ```
