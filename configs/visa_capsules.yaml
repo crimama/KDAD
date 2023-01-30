@@ -2,7 +2,7 @@ DATA:
   datadir: ../Dataset/ViSA
   dataset: ViSA
   imgcls: capsules
-  imgsize: 1024
+  imgsize: 256
   mode: full
 MODEL:
   decoder: de_wide_resnet50_2
@@ -11,7 +11,7 @@ SAVE:
   savedir: ./save_models
   wandb: true
 TRAIN:
-  batchsize: 1
+  batchsize: 16
   device: cuda
   epochs: 50
   lr: 0.005
