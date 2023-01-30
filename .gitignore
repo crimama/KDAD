@@ -130,3 +130,5 @@ dmypy.json
 
 /save_models
 working.ipynb
+
+wandb/ 

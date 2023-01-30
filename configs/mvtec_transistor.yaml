@@ -1,0 +1,20 @@
+DATA:
+  datadir: ../Dataset/MVtecAD
+  dataset: MVtecAD
+  imgcls: transistor
+  imgsize: 1024
+  mode: full
+MODEL:
+  decoder: de_wide_resnet50_2
+  encoder: wide_resnet50_2
+SAVE:
+  savedir: ./save_models
+  wandb: true
+TRAIN:
+  batchsize: 1
+  device: cuda
+  epochs: 50
+  lr: 0.005
+  multigpu: true
+  scheulder: false
+  seed: 111
