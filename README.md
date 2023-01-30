@@ -8,7 +8,7 @@ Paper : https://arxiv.org/abs/2201.10703
 - MVtecAD Dataset : https://www.mvtec.com/company/research/datasets/mvtec-ad
 - ViSA Dataset : https://github.com/amazon-science/spot-diff
 
-- Since I use two difference dataset, so I unify structure of dataset. So, before running training, you need to make a split_csv file using [make_csv4mvtecad.ipynb](make_csv4mvtecad.ipynb) ,which is to make csv file containing information about dataset like what `ViSA` dataset has. 
+- Since I use two difference dataset, so I unify structure of dataset. So, before running training, you need to make a `split_csv` file using [make_csv4mvtecad.ipynb](make_csv4mvtecad.ipynb) ,which is to make csv file containing information about dataset like what `ViSA` dataset has. 
 
 # Run 
 
