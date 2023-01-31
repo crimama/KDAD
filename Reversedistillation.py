@@ -119,7 +119,7 @@ def run(cfg):
     optimizer = torch.optim.Adam(list(decoder.parameters()) + list(bn.parameters()),lr = cfg['TRAIN']['lr'],betas=(0.5,0.999))
     accelerator.print("All loaded, train start")
     run = os.path.split(__file__)[-1].split(".")[0]
-    accelerator.init_trackers(run,cfg)
+    
     
     # accelerator set and prepare 
     trainloader,testloader,encoder,bn,decoder,optimizer = accelerator.prepare(
@@ -128,7 +128,7 @@ def run(cfg):
     # initialize wandb: 
     if cfg['SAVE']['wandb']:
         accelerator.init_trackers(project_name='Reversedistillation',config=cfg,init_kwargs={"wandb":{
-                                                                                                "name":"MVtecADpPill",
+                                                                                                "name": os.path.join(cfg['DATA']['dataset'],cfg['DATA']['imgcls']),
                                                                                                 "group":"my_experiment"
                                                                                                 }
                                                                                             }
@@ -160,16 +160,16 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
             
             # predict 
             inputs = encoder(batch_imgs)
-            outputs = decoder(bn(inputs))
-            
-            
+            outputs = decoder(bn(inputs))\
 
             # calculate loss 
             loss = loss_function(inputs,outputs)
             
+            
             # loss update 
             optimizer.zero_grad()
-            loss.backward()
+            # ! accelerator.backward(loss)
+            loss.backward() 
             optimizer.step()
             loss_list.append(loss.item())
             
@@ -199,9 +199,9 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
         # check point save 
         if auroc_px > best:
             best = auroc_px
-            torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'best_decoder.pt'))
-            torch.save(bn,os.path.join(cfg['SAVE']['savedir'],'best_bn.pt'))
-            #accelerator.save_state(os.path.join(cfg['SAVE']['savedir']))
+            #torch.save(decoder,os.path.join(cfg['SAVE']['savedir'],'best_decoder.pt'))
+            #torch.save(bn,os.path.join(cfg['SAVE']['savedir'],'best_bn.pt'))
+            accelerator.save_state(os.path.join(cfg['SAVE']['savedir']))
             _logger.info(f"New Best model saved - Epoch : {epoch+1}")
             
         # wandb log 
