@@ -1,6 +1,6 @@
-mv_list='bottle grid hazelnut tile'
+mv_list='candle'
 for r in $mv_list
 do
-    python Reversedistillation.py --yaml_config ./configs/mvtec_$r.yaml
+    accelerate launch Reversedistillation.py --yaml_config ./configs/visa/visa_$r.yaml
 done 
 #edit 
