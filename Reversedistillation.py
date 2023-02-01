@@ -165,11 +165,10 @@ def train(trainloader,testloader,encoder,bn,decoder,optimizer,cfg,accelerator):
             # calculate loss 
             loss = loss_function(inputs,outputs)
             
-            
             # loss update 
             optimizer.zero_grad()
-            # ! accelerator.backward(loss)
-            loss.backward() 
+            accelerator.backward(loss)
+            #loss.backward() 
             optimizer.step()
             loss_list.append(loss.item())
             
