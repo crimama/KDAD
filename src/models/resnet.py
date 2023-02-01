@@ -399,7 +399,7 @@ class BN_layer(nn.Module):
         self.base_width = width_per_group
         self.inplanes = 256 * block.expansion
         self.dilation = 1
-        self.bn_layer = self._make_layer(block, 512, layers, stride=2)
+        self.bn_layer = self._make_layer(block, 512, layers, stride=2) #AttanBasicBlock 
         #bn_layer : Reverse distillation에서 OCE에 해당하는 레이어 
 
         self.conv1 = conv3x3(64 * block.expansion, 128 * block.expansion, 2)
